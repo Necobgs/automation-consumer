@@ -24,17 +24,17 @@ export class TasksService {
     const [cmdStart, ...argsStart] =
       processTaskDto.cmdStart.split(" ");
 
-      if (exitCodeUpdate === 0) {
-        ctx.getChannelRef().ack(ctx.getMessage(), false, true);
-        console.log(`Tarefa ${processTaskDto.taskId} não foi possível atualizar o projeto em ${processTaskDto.projectFolderPath}
-          cmd update: ${processTaskDto.cmdUpdateDependencies}`);
-        return;
-      }
+    const startExitCode = await this.runCommand(cmdStart, argsStart);
 
-    //  else {
-    //   ctx.getChannelRef().nack(ctx.getMessage(), false, true);
-    //   console.error(`Tarefa ${processTaskDto.taskId} falhou com código ${exitCode}`);
-    // }
+
+    if (startExitCode === 0) {
+      ctx.getChannelRef().ack(ctx.getMessage());
+      console.log(`Tarefa ${processTaskDto.taskId} concluída`);
+      return;
+    }
+
+    ctx.getChannelRef().nack(ctx.getMessage(), false, true);
+    console.error(`Tarefa ${processTaskDto.taskId} falhou`);    
   }
 
   private runCommand(command: string, args: string[]): Promise<number> {
